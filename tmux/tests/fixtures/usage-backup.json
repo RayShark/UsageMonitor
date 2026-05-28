@@ -1,0 +1,40 @@
+{
+  "isValid": true,
+  "mode": "normal",
+  "model_stats": [],
+  "plan_name": "Team",
+  "remaining": 74.11,
+  "subscription": {
+    "daily_usage_usd": 425.89,
+    "daily_limit_usd": 500,
+    "weekly_usage_usd": 980.4,
+    "weekly_limit_usd": 3500,
+    "monthly_usage_usd": 2880.22,
+    "monthly_limit_usd": 15000,
+    "expires_at": "2027-05-18T00:00:00Z"
+  },
+  "unit": "USD",
+  "usage": {
+    "today": {
+      "request_count": 88,
+      "input_tokens": 2200,
+      "output_tokens": 1900,
+      "total_tokens": 4100,
+      "input_cost_usd": 2.23,
+      "output_cost_usd": 3.01,
+      "total_cost_usd": 5.24
+    },
+    "total": {
+      "request_count": 880,
+      "input_tokens": 22000,
+      "output_tokens": 19000,
+      "total_tokens": 41000,
+      "input_cost_usd": 22.3,
+      "output_cost_usd": 30.1,
+      "total_cost_usd": 52.4
+    },
+    "average_duration_ms": 900,
+    "rpm": 1.2,
+    "tpm": 68
+  }
+}

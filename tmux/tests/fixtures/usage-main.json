@@ -1,0 +1,40 @@
+{
+  "isValid": true,
+  "mode": "normal",
+  "model_stats": [],
+  "plan_name": "Pro",
+  "remaining": 53.67,
+  "subscription": {
+    "daily_usage_usd": 246.33,
+    "daily_limit_usd": 300,
+    "weekly_usage_usd": 620.12,
+    "weekly_limit_usd": 2100,
+    "monthly_usage_usd": 1880.22,
+    "monthly_limit_usd": 9000,
+    "expires_at": "2027-05-18T00:00:00Z"
+  },
+  "unit": "USD",
+  "usage": {
+    "today": {
+      "request_count": 42,
+      "input_tokens": 1200,
+      "output_tokens": 900,
+      "total_tokens": 2100,
+      "input_cost_usd": 1.23,
+      "output_cost_usd": 2.01,
+      "total_cost_usd": 3.24
+    },
+    "total": {
+      "request_count": 420,
+      "input_tokens": 12000,
+      "output_tokens": 9000,
+      "total_tokens": 21000,
+      "input_cost_usd": 12.3,
+      "output_cost_usd": 20.1,
+      "total_cost_usd": 32.4
+    },
+    "average_duration_ms": 1200,
+    "rpm": 0.7,
+    "tpm": 35
+  }
+}
