@@ -70,7 +70,7 @@ progress_bar() {
     width = 18
     filled = 0
     if (limit > 0) {
-      filled = int(used / limit * width)
+      filled = int(used / limit * width + 0.5)
       if (filled < 0) filled = 0
       if (filled > width) filled = width
     }
@@ -131,7 +131,15 @@ fetch_usage_from_config() {
     api_key="$(jq -r '.apiKey // empty' <<<"$key_payload")"
     base_url="$(
       jq -r --arg default "$default_base" '
-        .baseURL // .baseURLOverride // $default
+        (.baseURL // "") as $base |
+        (.baseURLOverride // "") as $override |
+        if $base != "" then
+          $base
+        elif $override != "" then
+          $override
+        else
+          $default
+        end
       ' <<<"$key_payload"
     )"
 
