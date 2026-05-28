@@ -19,6 +19,9 @@ set -g @usage_monitor_interval "60"
 set -g @usage_monitor_height "2"
 set -g @usage_monitor_model "gpt-5.5"
 set -g @usage_monitor_key "u"
+set -g @usage_monitor_global_key "U"
+set -g @usage_monitor_mode "oneline"
+set -g @usage_monitor_theme "classic"
 ```
 
 Reload tmux and install TPM plugins with your TPM install binding. The repository root contains `usage-monitor.tmux`, which forwards to the shell-native plugin scripts under `tmux/`.
@@ -60,19 +63,29 @@ The plugin also accepts the existing UsageMonitor CLI config shape with `default
 
 ## Usage
 
-Press your tmux prefix and `u` to toggle the monitor pane. Change the key with:
+Press your tmux prefix and `u` to toggle the monitor pane for the current window. Press your prefix and `U` to toggle monitor panes for every window in the current session.
+
+Change the keys with:
 
 ```tmux
-set -g @usage_monitor_key "U"
+set -g @usage_monitor_key "u"
+set -g @usage_monitor_global_key "U"
 ```
 
 The pane renders a compact line:
 
 ```text
-总额度 [████████████████░░] 88.0% $968.37/$1100.00 余额 $131.63 渠道 3/3 OK gpt-5.5 ○○◐○○ 首T 2.1s ↻60s
+USAGE [█████████░]   94.7%  $1041.87/$1100.00  left $58.13  |  CHANNEL 3/3 OK  gpt-5.5  ○○◐○○○○○○○  首T 2.1s  ↻60s
 ```
 
-The plugin creates at most one `usage-monitor` pane per tmux session. Pressing the binding again closes that pane.
+Inside a focused monitor pane:
+
+- `1` switches to `oneline`
+- `2` switches to `lite`
+- `3` switches to `detail`
+- `c` cycles the color theme
+
+The pane height adjusts to the selected mode. Data refreshes in the background, so mode and theme switches render from the latest cached snapshot instead of waiting for the next network request. Pressing the same tmux binding again closes the relevant monitor pane: `@usage_monitor_key` closes the monitor in the current window, and `@usage_monitor_global_key` closes all monitor panes in the current session.
 
 ## Options
 
@@ -82,6 +95,9 @@ set -g @usage_monitor_interval "60"
 set -g @usage_monitor_height "2"
 set -g @usage_monitor_model "gpt-5.5"
 set -g @usage_monitor_key "u"
+set -g @usage_monitor_global_key "U"
+set -g @usage_monitor_mode "oneline"
+set -g @usage_monitor_theme "classic"
 ```
 
 ## Data Sources

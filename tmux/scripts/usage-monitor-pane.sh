@@ -29,11 +29,15 @@ require_command tmux
 
 plugin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 renderer="$plugin_dir/scripts/usage-monitor-render.sh"
+loop="$plugin_dir/scripts/usage-monitor-loop.sh"
 
 height="$(numeric_or_default "${USAGE_MONITOR_TMUX_HEIGHT:-2}" 2)"
 interval="$(numeric_or_default "${USAGE_MONITOR_TMUX_INTERVAL:-60}" 60)"
 model="${USAGE_MONITOR_TMUX_MODEL:-gpt-5.5}"
 config="${USAGE_MONITOR_TMUX_CONFIG:-$HOME/.config/tmux-usage-monitor/config.json}"
+mode="${USAGE_MONITOR_TMUX_MODE:-oneline}"
+theme="${USAGE_MONITOR_TMUX_THEME:-classic}"
+scope="${USAGE_MONITOR_TMUX_SCOPE:-pane}"
 target_pane="${USAGE_MONITOR_TMUX_TARGET_PANE:-}"
 target_session="${USAGE_MONITOR_TMUX_TARGET_SESSION:-}"
 title="usage-monitor"
@@ -54,47 +58,114 @@ if [[ -z "$target_session" ]]; then
   exit 0
 fi
 
-target_command="$(tmux display-message -pt "$target_pane" '#{pane_current_command}' 2>/dev/null || true)"
-if [[ "$target_command" == "tmux-agent-sidebar" ]]; then
-  target_window="$(tmux display-message -pt "$target_pane" '#{session_name}:#{window_index}' 2>/dev/null || true)"
-  replacement_pane="$(
-    tmux list-panes -t "$target_window" -F '#{pane_id}|#{pane_width}|#{pane_height}|#{pane_current_command}|#{pane_title}' |
-      awk -F '|' '
-        $4 != "tmux-agent-sidebar" && $5 != "usage-monitor" {
-          area = $2 * $3
-          if (area > best_area) {
-            best_area = area
-            best_pane = $1
-          }
+largest_content_pane() {
+  local target="$1"
+  tmux list-panes -t "$target" -F '#{pane_id}|#{pane_width}|#{pane_height}|#{pane_current_command}|#{pane_title}' |
+    awk -F '|' '
+      $4 != "tmux-agent-sidebar" && $5 != "usage-monitor" {
+        area = $2 * $3
+        if (area > best_area) {
+          best_area = area
+          best_pane = $1
         }
-        END { print best_pane }
-      '
+      }
+      END { print best_pane }
+    '
+}
+
+monitor_panes_for() {
+  local target="$1"
+  tmux list-panes -t "$target" -F '#{pane_id} #{pane_title}' |
+    awk -v title="$title" '$2 == title { print $1 }'
+}
+
+monitor_panes_for_session() {
+  local session="$1"
+  tmux list-panes -s -t "$session" -F '#{pane_id} #{pane_title}' |
+    awk -v title="$title" '$2 == title { print $1 }'
+}
+
+kill_monitor_panes_for() {
+  local target="$1"
+  monitor_panes_for "$target" |
+    xargs -r -n1 tmux kill-pane -t
+}
+
+kill_monitor_panes_for_session() {
+  local session="$1"
+  monitor_panes_for_session "$session" |
+    xargs -r -n1 tmux kill-pane -t
+}
+
+content_target_for_pane() {
+  local pane="$1"
+  local command
+  local window
+  local replacement
+
+  command="$(tmux display-message -pt "$pane" '#{pane_current_command}' 2>/dev/null || true)"
+  if [[ "$command" != "tmux-agent-sidebar" ]]; then
+    printf '%s' "$pane"
+    return
+  fi
+
+  window="$(tmux display-message -pt "$pane" '#{session_name}:#{window_index}' 2>/dev/null || true)"
+  replacement="$(largest_content_pane "$window")"
+  if [[ -n "$replacement" ]]; then
+    printf '%s' "$replacement"
+  else
+    printf '%s' "$pane"
+  fi
+}
+
+create_monitor_pane() {
+  local pane="$1"
+  local focus="${2:-monitor}"
+  local loop_command
+  local new_pane
+  local split_args
+
+  loop_command="USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") USAGE_MONITOR_TMUX_MODE=$(shell_quote "$mode") USAGE_MONITOR_TMUX_THEME=$(shell_quote "$theme") $(shell_quote "$loop")"
+  split_args=(-P -F '#{pane_id}' -v -l "$height" -t "$pane")
+  if [[ "$focus" != "monitor" ]]; then
+    split_args=(-d "${split_args[@]}")
+  fi
+
+  new_pane="$(
+    tmux split-window \
+      "${split_args[@]}" \
+      "bash -lc $(shell_quote "$loop_command")"
   )"
-  if [[ -n "$replacement_pane" ]]; then
-    target_pane="$replacement_pane"
+
+  tmux select-pane -t "$new_pane" -T "$title"
+  if [[ "$focus" == "monitor" ]]; then
+    tmux select-pane -t "$new_pane"
+  else
+    tmux select-pane -t "$pane"
+  fi
+}
+
+if [[ "$scope" == "session" ]]; then
+  if [[ -n "$(monitor_panes_for_session "$target_session")" ]]; then
+    kill_monitor_panes_for_session "$target_session"
+    exit 0
+  fi
+else
+  target_window="$(tmux display-message -pt "$target_pane" '#{session_name}:#{window_index}' 2>/dev/null || true)"
+  if [[ -n "$target_window" && -n "$(monitor_panes_for "$target_window")" ]]; then
+    kill_monitor_panes_for "$target_window"
+    exit 0
   fi
 fi
 
-existing_pane="$(
-  tmux list-panes -s -t "$target_session" -F '#{pane_id} #{pane_title}' |
-    awk -v title="$title" '$2 == title { print $1; exit }'
-)"
-
-if [[ -n "$existing_pane" ]]; then
-  tmux kill-pane -t "$existing_pane"
-  exit 0
+if [[ "$scope" == "session" ]]; then
+  while read -r window; do
+    pane="$(largest_content_pane "$window")"
+    if [[ -n "$pane" ]]; then
+      create_monitor_pane "$pane" "background"
+    fi
+  done < <(tmux list-windows -t "$target_session" -F '#{session_name}:#{window_index}')
+else
+  target_pane="$(content_target_for_pane "$target_pane")"
+  create_monitor_pane "$target_pane"
 fi
-
-loop_command="while :; do $(shell_quote "$renderer") --config $(shell_quote "$config") --model $(shell_quote "$model") --interval $(shell_quote "$interval") --no-color; sleep $(shell_quote "$interval"); done"
-new_pane="$(
-  tmux split-window \
-    -P \
-    -F '#{pane_id}' \
-    -v \
-    -l "$height" \
-    -t "$target_pane" \
-    "bash -lc $(shell_quote "$loop_command")"
-)"
-
-tmux select-pane -t "$new_pane" -T "$title"
-tmux select-pane -t "$target_pane"
