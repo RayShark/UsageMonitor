@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import XCTest
 @testable import UsageMonitor
@@ -26,3 +27,5 @@ final class StandardEditMenuTests: XCTestCase {
         XCTAssertTrue(actions.contains(#selector(NSText.selectAll(_:))))
     }
 }
+
+#endif

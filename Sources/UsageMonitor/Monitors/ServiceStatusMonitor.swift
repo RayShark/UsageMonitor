@@ -1,4 +1,5 @@
 import Foundation
+import UsageMonitorCore
 
 enum ServiceStatusMonitorError: Error, Equatable {
     case missingModel(String)

@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import XCTest
 @testable import UsageMonitor
@@ -48,3 +49,5 @@ private final class RecordingWindow: NSWindow {
         recorder.events.append("orderFrontRegardless")
     }
 }
+
+#endif

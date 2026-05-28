@@ -1,4 +1,5 @@
 import XCTest
+@testable import UsageMonitorCore
 @testable import UsageMonitor
 
 @MainActor

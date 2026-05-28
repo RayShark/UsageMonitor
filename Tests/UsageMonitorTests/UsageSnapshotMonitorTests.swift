@@ -1,4 +1,5 @@
 import XCTest
+@testable import UsageMonitorCore
 @testable import UsageMonitor
 
 @MainActor
@@ -81,7 +82,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
         ]
         let monitor = UsageSnapshotMonitor(
             userDefaults: defaults,
@@ -164,7 +165,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
             .init(statusCode: 500, body: #"{"message":"server down"}"#),
         ]
         let monitor = UsageSnapshotMonitor(
@@ -190,8 +191,8 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
-            .init(statusCode: 200, body: Sub2APIClientTests.invalidUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
+            .init(statusCode: 200, body: UsageMonitorTestFixtures.invalidUsageJSON),
         ]
         let monitor = UsageSnapshotMonitor(
             userDefaults: defaults,
@@ -258,7 +259,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
         ]
         let monitor = UsageSnapshotMonitor(
             userDefaults: defaults,
@@ -302,7 +303,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
         ]
         let monitor = UsageSnapshotMonitor(
             userDefaults: defaults,
@@ -326,7 +327,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
         ]
         let firstMonitor = UsageSnapshotMonitor(
             userDefaults: defaults,
@@ -355,7 +356,7 @@ final class UsageSnapshotMonitorTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "UsageMonitorTests.\(UUID().uuidString)")!
         let loader = RequestRecordingLoader()
         loader.responses = [
-            .init(statusCode: 200, body: Sub2APIModelsTests.sampleUsageJSON),
+            .init(statusCode: 200, body: makeUsageJSON()),
         ]
         let firstMonitor = UsageSnapshotMonitor(
             userDefaults: defaults,

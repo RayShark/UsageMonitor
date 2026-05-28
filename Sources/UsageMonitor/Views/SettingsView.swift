@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UsageMonitorCore
 
 struct SettingsView: View {
     @ObservedObject var monitor: UsageSnapshotMonitor

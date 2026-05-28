@@ -1,14 +1,21 @@
-# 用量监控
+# UsageMonitor / 用量监控
 
-`用量监控` is a native macOS menu bar app for monitoring one API-key based sub2api usage endpoint. The technical executable name is `UsageMonitor`, with bundle identifier `com.usagemonitor.app`.
+[![CI](https://github.com/yanbohon/UsageMonitor/actions/workflows/ci.yml/badge.svg)](https://github.com/yanbohon/UsageMonitor/actions/workflows/ci.yml)
+[![Linux CLI](https://github.com/yanbohon/UsageMonitor/actions/workflows/linux-cli.yml/badge.svg)](https://github.com/yanbohon/UsageMonitor/actions/workflows/linux-cli.yml)
+[![Release](https://github.com/yanbohon/UsageMonitor/actions/workflows/release.yml/badge.svg)](https://github.com/yanbohon/UsageMonitor/actions/workflows/release.yml)
+
+English | [中文](README.zh-CN.md)
+
+`用量监控` is a native macOS menu bar app and Linux-friendly CLI for monitoring sub2api-compatible usage endpoints and public channel health. The technical macOS executable name is `UsageMonitor`, with bundle identifier `com.usagemonitor.app`.
 
 ## What It Does
 
-- Connects to one sub2api instance with Base URL and API Key
+- Connects to one or more sub2api-compatible instances with Base URL and API Key configuration
 - Calls `GET /v1/usage` with `Authorization: Bearer <apiKey>`
-- Stores Base URL, API Key, refresh interval, and menu-bar decimal preference in UserDefaults
+- Stores Base URL, API keys, refresh interval, and display preferences
 - Shows `subscription.daily_usage_usd` in the menu bar, with an option to hide decimal places
 - Shows remaining balance, plan, mode, subscription limits, usage summary, and model stats in the popover
+- Shows public channel health and first-token latency from `GET https://status.input.im/api/status`
 - Preserves the last successful usage snapshot in memory when refresh fails
 
 ## Requirements
@@ -25,6 +32,31 @@ swift run UsageMonitor
 ```
 
 Open settings from the menu bar, enter the sub2api root URL and API Key, then click `验证并刷新`. The display section lets you choose whether the menu bar shows decimal places.
+
+## Linux CLI
+
+The macOS app remains the primary menu-bar experience. Linux users can run the compact CLI dashboard:
+
+```bash
+swift build --product usage-monitor -c release
+USAGE_MONITOR_BASE_URL=https://example.com USAGE_MONITOR_API_KEY=sk-... swift run usage-monitor -- bar --interval 60
+```
+
+Linux release packages are built with:
+
+```bash
+./scripts/build-linux-cli.sh
+```
+
+The `bar` command is designed for a tmux pane. `--mode oneline` keeps total quota and gpt-5.5 health on one row. `--mode lite` shows a total quota bar, one quota bar per key, remaining days, and circle-based channel health with first-token latency. `--mode detail` adds bordered service and per-key detail panels. In live `bar` mode, press `o`, `d`, or `l` to switch modes, `c` to cycle themes, and `Ctrl-C` to exit. Themes include `contrast`, `classic`, `mono`, `dracula`, `catppuccin`, `tokyonight`, `nord`, and `gruvbox`.
+
+See [docs/linux-cli.md](docs/linux-cli.md).
+
+## CI/CD
+
+- `CI` builds and tests the macOS app on `macos-14`.
+- `Linux CLI` runs core and CLI tests in `swift:5.9-jammy`, builds `usage-monitor-linux-amd64.tar.gz`, verifies its checksum, smokes the packaged binary, and uploads the artifact.
+- `Release` builds the macOS DMG and Linux amd64 CLI package, attaches both to the GitHub Release, and publishes SHA-256 checksum files.
 
 ## Configuration
 
@@ -57,22 +89,32 @@ No unit test calls a real service. API behavior is tested through an injectable 
 ## Project Structure
 
 ```text
+Sources/UsageMonitorCore/
+├── Configuration/
+├── Formatters/
+├── Models/
+├── Services/
+└── Terminal/
+
 Sources/UsageMonitor/
 ├── UsageMonitorApp.swift
-├── Models/Sub2APIModels.swift
-├── Services/Sub2APIClient.swift
-├── Monitors/UsageSnapshotMonitor.swift
-├── Formatters/UsageFormatters.swift
+├── Controllers/
+├── Monitors/
+├── Services/
 └── Views/
-    ├── MenuBarView.swift
-    ├── SettingsView.swift
-    └── SettingsWindowController.swift
 
-Tests/UsageMonitorTests/
-├── Sub2APIClientTests.swift
-├── Sub2APIModelsTests.swift
-├── UsageSnapshotMonitorTests.swift
-└── UsageFormattersTests.swift
+Sources/UsageMonitorCLI/
+├── Commands/
+├── Rendering/
+├── CLIArguments.swift
+├── CLIConfig.swift
+├── CLIOutput.swift
+└── main.swift
+
+Tests/
+├── UsageMonitorCoreTests/
+├── UsageMonitorCLITests/
+└── UsageMonitorTests/
 ```
 
 ## License

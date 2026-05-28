@@ -40,6 +40,26 @@ open /Applications/UsageMonitor.app
 
 The app runs in the menu bar. Open settings, enter the sub2api Base URL and API Key, then click `验证并刷新`.
 
+## Linux CLI
+
+Install Swift 5.9+ on Linux, then build:
+
+```bash
+swift build --product usage-monitor -c release
+mkdir -p ~/.local/bin
+cp .build/release/usage-monitor ~/.local/bin/usage-monitor
+```
+
+Run:
+
+```bash
+USAGE_MONITOR_BASE_URL=https://example.com \
+USAGE_MONITOR_API_KEY=sk-... \
+usage-monitor bar --interval 60
+```
+
+See [docs/linux-cli.md](docs/linux-cli.md) for tmux recipes and config file setup.
+
 ## Uninstall
 
 ```bash

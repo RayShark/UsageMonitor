@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UsageMonitorCore
 
 enum SymbolColor {
     static func nsColor(hex: String) -> NSColor {

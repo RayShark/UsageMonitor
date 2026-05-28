@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import SwiftUI
 import XCTest
@@ -45,3 +46,5 @@ private final class FocusRecordingTextField: NSTextField {
         super.selectText(sender)
     }
 }
+
+#endif

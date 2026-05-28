@@ -29,15 +29,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build & Release
-    runs-on: macos-14
+  version:
+    name: Resolve version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Extract version
         id: version
         run: |
@@ -54,16 +52,72 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "Detected version: $VERSION (tag: v$VERSION)"
 
+  linux-cli:
+    name: Build Linux CLI
+    runs-on: ubuntu-24.04
+    needs: version
+    container:
+      image: swift:5.9-jammy
+    outputs:
+      sha256: ${{ steps.linux_checksum.outputs.sha256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Linux CLI tests
+        run: swift test --filter UsageMonitorCoreTests && swift test --filter UsageMonitorCLITests
+
+      - name: Build Linux amd64 CLI package
+        run: ./scripts/build-linux-cli.sh
+
+      - name: CLI package smoke
+        run: |
+          mkdir -p /tmp/usage-monitor-smoke
+          tar -xzf build/usage-monitor-linux-amd64.tar.gz -C /tmp/usage-monitor-smoke
+          /tmp/usage-monitor-smoke/usage-monitor --help
+
+      - name: Verify Linux checksum
+        run: |
+          cd build
+          sha256sum -c usage-monitor-linux-amd64.tar.gz.sha256
+
+      - name: Capture Linux checksum
+        id: linux_checksum
+        run: |
+          CHECKSUM=$(awk '{print $1}' build/usage-monitor-linux-amd64.tar.gz.sha256)
+          echo "sha256=$CHECKSUM" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Linux CLI artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: usage-monitor-linux-amd64-${{ needs.version.outputs.tag }}
+          path: |
+            build/usage-monitor-linux-amd64.tar.gz
+            build/usage-monitor-linux-amd64.tar.gz.sha256
+          retention-days: 90
+
+  release:
+    name: Build & Release
+    runs-on: macos-14
+    needs: [version, linux-cli]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Check tag does not already exist
         run: |
-          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "::error::Tag ${{ steps.version.outputs.tag }} already exists"
+          if git rev-parse "refs/tags/${{ needs.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "::error::Tag ${{ needs.version.outputs.tag }} already exists"
             exit 1
           fi
 
       - name: Stamp version into Info.plist
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.version.outputs.version }}"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" Resources/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" Resources/Info.plist
           echo "Stamped Info.plist: version=$VERSION build=${{ github.run_number }}"
@@ -75,10 +129,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Resources/Info.plist
-          git commit -m "Stamp version ${{ steps.version.outputs.version }} (build ${{ github.run_number }})"
+          git commit -m "Stamp version ${{ needs.version.outputs.version }} (build ${{ github.run_number }})"
 
       - name: Cache Swift build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .build
           key: swift-release-${{ runner.os }}-${{ hashFiles('Package.swift', 'Package.resolved', 'Sources/**/*.swift') }}
@@ -103,26 +157,34 @@ jobs:
           CHECKSUM=$(awk '{print $1}' UsageMonitor.dmg.sha256)
           echo "sha256=$CHECKSUM" >> "$GITHUB_OUTPUT"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Download Linux CLI artifact
+        uses: actions/download-artifact@v8
         with:
-          name: UsageMonitor-${{ steps.version.outputs.tag }}
+          name: usage-monitor-linux-amd64-${{ needs.version.outputs.tag }}
+          path: build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: UsageMonitor-${{ needs.version.outputs.tag }}
           path: |
             build/UsageMonitor.dmg
             build/UsageMonitor.dmg.sha256
             build/UsageMonitor.app
+            build/usage-monitor-linux-amd64.tar.gz
+            build/usage-monitor-linux-amd64.tar.gz.sha256
           retention-days: 90
 
       - name: Create and push tag
         run: |
-          git tag "${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
+          git tag "${{ needs.version.outputs.tag }}"
+          git push origin "${{ needs.version.outputs.tag }}"
 
       - name: Determine release flags
         id: flags
         run: |
           PRERELEASE=false
-          if echo "${{ steps.version.outputs.version }}" | grep -q -- '-'; then
+          if echo "${{ needs.version.outputs.version }}" | grep -q -- '-'; then
             PRERELEASE=true
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
@@ -138,8 +200,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: 用量监控 ${{ steps.version.outputs.tag }}
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: 用量监控 ${{ needs.version.outputs.tag }}
           draft: ${{ steps.flags.outputs.draft }}
           prerelease: ${{ steps.flags.outputs.prerelease }}
           generate_release_notes: true
@@ -148,15 +210,21 @@ jobs:
 
             Download `UsageMonitor.dmg`, open it, and drag 用量监控 to Applications.
 
+            Linux amd64 users can download `usage-monitor-linux-amd64.tar.gz`, extract it, and move `usage-monitor` into a PATH directory.
+
             ## Verify download
 
             ```
             shasum -a 256 UsageMonitor.dmg
+            shasum -a 256 usage-monitor-linux-amd64.tar.gz
             ```
-            Expected: `${{ steps.checksums.outputs.sha256 }}`
+            Expected macOS DMG: `${{ steps.checksums.outputs.sha256 }}`
+            Expected Linux amd64: `${{ needs.linux-cli.outputs.sha256 }}`
           files: |
             build/UsageMonitor.dmg
             build/UsageMonitor.dmg.sha256
+            build/usage-monitor-linux-amd64.tar.gz
+            build/usage-monitor-linux-amd64.tar.gz.sha256
 
       - name: Create merge-back PR
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
@@ -167,13 +235,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Resources/Info.plist
-          git commit -m "chore: stamp version ${{ steps.version.outputs.version }}" || true
+          git commit -m "chore: stamp version ${{ needs.version.outputs.version }}" || true
           git push origin "$BRANCH"
           gh pr create \
             --base main \
             --head "$BRANCH" \
-            --title "chore: merge ${{ steps.version.outputs.tag }} back to main" \
-            --body "Automated PR to merge release branch back to main after ${{ steps.version.outputs.tag }} release.
+            --title "chore: merge ${{ needs.version.outputs.tag }} back to main" \
+            --body "Automated PR to merge release branch back to main after ${{ needs.version.outputs.tag }} release.
 
           This PR includes the version stamp in Info.plist.
 

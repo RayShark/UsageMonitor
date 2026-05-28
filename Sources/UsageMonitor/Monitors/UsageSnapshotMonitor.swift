@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UsageMonitorCore
 
 enum ServiceStatusLayoutMode: String, CaseIterable, Equatable {
     case verticalTwo
@@ -59,8 +60,6 @@ final class UsageSnapshotMonitor: ObservableObject {
 
     static let allowedRefreshIntervalSeconds = [1, 5, 30, 60, 300, 900, 1_800, 3_600]
     static let defaultRefreshIntervalSeconds = 300
-    static let lowBalanceAlertThresholdUSD = 10.0
-    static let expiringSoonWindowDays = 7
 
     @Published private(set) var defaultBaseURLText: String
     @Published private(set) var usageKeys: [UsageKeyEntry]
@@ -721,34 +720,7 @@ final class UsageSnapshotMonitor: ObservableObject {
     }
 
     private func thresholdAlertKinds(for snapshot: UsageResponse) -> [UsageThresholdAlertKind] {
-        var kinds: [UsageThresholdAlertKind] = []
-
-        if let percentage = UsageFormatters.percentage(
-            used: snapshot.subscription.dailyUsageUSD,
-            limit: snapshot.subscription.dailyLimitUSD
-        ) {
-            if percentage >= 0.95 {
-                kinds.append(.dailyUsage95)
-            } else if percentage >= 0.80 {
-                kinds.append(.dailyUsage80)
-            }
-        }
-
-        if snapshot.remaining <= Self.lowBalanceAlertThresholdUSD {
-            kinds.append(.lowBalance)
-        }
-
-        if let expiresAt = snapshot.subscription.expiresAt {
-            let now = now()
-            if expiresAt <= now {
-                kinds.append(.subscriptionExpired)
-            } else if let soonThreshold = Calendar.current.date(byAdding: .day, value: Self.expiringSoonWindowDays, to: now),
-                      expiresAt <= soonThreshold {
-                kinds.append(.subscriptionExpiringSoon)
-            }
-        }
-
-        return kinds.sorted()
+        UsageAlertEvaluator.thresholdAlertKinds(for: snapshot, now: now())
     }
 
     private func scheduleTimerIfNeeded() {
@@ -895,14 +867,6 @@ private extension UsageSnapshotMonitor {
 }
 
 extension UsageSnapshotMonitor: SettingsValuesPersisting {}
-
-enum UsageAuthState: Equatable {
-    case notConfigured
-    case ready
-    case authenticated
-    case unauthorized
-    case error
-}
 
 enum UsageValidationError: Error {
     case missingBaseURL

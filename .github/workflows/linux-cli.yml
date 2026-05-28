@@ -1,0 +1,61 @@
+name: Linux CLI
+
+on:
+  push:
+    branches: ["main", "linux-cli-*", "release/v*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-cli-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-package:
+    name: Build, Test & Package
+    runs-on: ubuntu-24.04
+    container:
+      image: swift:5.9-jammy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Validate packaging script
+        run: bash -n scripts/build-linux-cli.sh
+
+      - name: Run core tests
+        run: swift test --filter UsageMonitorCoreTests
+
+      - name: Run CLI tests
+        run: swift test --filter UsageMonitorCLITests
+
+      - name: Build Linux amd64 package
+        run: ./scripts/build-linux-cli.sh
+
+      - name: Verify package checksum
+        run: |
+          cd build
+          sha256sum -c usage-monitor-linux-amd64.tar.gz.sha256
+
+      - name: Smoke packaged binary
+        run: |
+          mkdir -p /tmp/usage-monitor-smoke
+          tar -xzf build/usage-monitor-linux-amd64.tar.gz -C /tmp/usage-monitor-smoke
+          test -x /tmp/usage-monitor-smoke/usage-monitor
+          /tmp/usage-monitor-smoke/usage-monitor --help
+
+      - name: Upload Linux CLI artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: usage-monitor-linux-amd64
+          path: |
+            build/usage-monitor-linux-amd64.tar.gz
+            build/usage-monitor-linux-amd64.tar.gz.sha256
+          retention-days: 14

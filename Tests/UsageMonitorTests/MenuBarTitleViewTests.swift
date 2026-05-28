@@ -1,5 +1,7 @@
+#if os(macOS)
 import SwiftUI
 import XCTest
+@testable import UsageMonitorCore
 @testable import UsageMonitor
 
 final class MenuBarTitleViewTests: XCTestCase {
@@ -67,3 +69,5 @@ final class MenuBarTitleViewTests: XCTestCase {
         XCTAssertEqual(MenuBarTitleView.topSectionRatio, 0.25)
     }
 }
+
+#endif

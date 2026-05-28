@@ -1,4 +1,5 @@
 import SwiftUI
+import UsageMonitorCore
 
 enum UsageKeyPager {
     static func clampedSelection(currentIndex: Int, keyCount: Int) -> Int {

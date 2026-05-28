@@ -1,4 +1,5 @@
 import SwiftUI
+import UsageMonitorCore
 
 struct MenuBarKeyDisplayRow: Equatable, Identifiable {
     let id: String

@@ -25,6 +25,8 @@ Use **Actions > Release > Run workflow**, enter a semver version, and choose dra
 
 - `UsageMonitor.dmg`
 - `UsageMonitor.dmg.sha256`
+- `usage-monitor-linux-amd64.tar.gz`
+- `usage-monitor-linux-amd64.tar.gz.sha256`
 
 ## Local Verification
 
@@ -33,4 +35,5 @@ swift test
 swift build
 ./scripts/build-app.sh
 ./scripts/create-dmg.sh
+./scripts/build-linux-cli.sh
 ```

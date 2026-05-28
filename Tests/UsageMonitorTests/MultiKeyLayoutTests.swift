@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import XCTest
+@testable import UsageMonitorCore
 @testable import UsageMonitor
 
 @MainActor
@@ -61,3 +63,5 @@ final class MultiKeyLayoutTests: XCTestCase {
         XCTAssertGreaterThan(threeColumns, oneColumn)
     }
 }
+
+#endif

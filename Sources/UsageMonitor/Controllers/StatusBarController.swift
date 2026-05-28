@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
+import UsageMonitorCore
 
 @MainActor
 final class StatusBarController: NSObject {

@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import XCTest
+@testable import UsageMonitorCore
 @testable import UsageMonitor
 
 @MainActor
@@ -91,3 +93,5 @@ private extension NSColor {
             && abs(lhs.alphaComponent - rhs.alphaComponent) <= tolerance
     }
 }
+
+#endif

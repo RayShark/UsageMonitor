@@ -1,4 +1,5 @@
 import Foundation
+import UsageMonitorCore
 
 @MainActor
 protocol SettingsValuesPersisting {
