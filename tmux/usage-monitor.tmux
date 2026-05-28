@@ -44,6 +44,6 @@ height="$(tmux_option "@usage_monitor_height" "2")"
 model="$(tmux_option "@usage_monitor_model" "gpt-5.5")"
 key="$(tmux_option "@usage_monitor_key" "u")"
 
-command="USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") $(shell_quote "$pane_script")"
+command="USAGE_MONITOR_TMUX_TARGET_PANE=#{pane_id} USAGE_MONITOR_TMUX_TARGET_SESSION=#{session_name} USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") $(shell_quote "$pane_script")"
 
 tmux bind-key "$key" run-shell -b "$command"

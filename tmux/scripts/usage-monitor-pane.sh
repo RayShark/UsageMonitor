@@ -34,16 +34,28 @@ height="$(numeric_or_default "${USAGE_MONITOR_TMUX_HEIGHT:-2}" 2)"
 interval="$(numeric_or_default "${USAGE_MONITOR_TMUX_INTERVAL:-60}" 60)"
 model="${USAGE_MONITOR_TMUX_MODEL:-gpt-5.5}"
 config="${USAGE_MONITOR_TMUX_CONFIG:-$HOME/.config/tmux-usage-monitor/config.json}"
+target_pane="${USAGE_MONITOR_TMUX_TARGET_PANE:-}"
+target_session="${USAGE_MONITOR_TMUX_TARGET_SESSION:-}"
 title="usage-monitor"
 
-current_pane="$(tmux display-message -p '#{pane_id}' 2>/dev/null || true)"
-if [[ -z "$current_pane" ]]; then
+if [[ -z "$target_pane" ]]; then
+  target_pane="$(tmux display-message -p '#{pane_id}' 2>/dev/null || true)"
+fi
+if [[ -z "$target_pane" ]]; then
   printf 'usage-monitor: no active tmux pane\n'
   exit 0
 fi
 
+if [[ -z "$target_session" ]]; then
+  target_session="$(tmux display-message -pt "$target_pane" '#{session_name}' 2>/dev/null || true)"
+fi
+if [[ -z "$target_session" ]]; then
+  printf 'usage-monitor: no target tmux session\n'
+  exit 0
+fi
+
 existing_pane="$(
-  tmux list-panes -F '#{pane_id} #{pane_title}' |
+  tmux list-panes -s -t "$target_session" -F '#{pane_id} #{pane_title}' |
     awk -v title="$title" '$2 == title { print $1; exit }'
 )"
 
@@ -59,9 +71,9 @@ new_pane="$(
     -F '#{pane_id}' \
     -v \
     -l "$height" \
-    -t "$current_pane" \
+    -t "$target_pane" \
     "bash -lc $(shell_quote "$loop_command")"
 )"
 
 tmux select-pane -t "$new_pane" -T "$title"
-tmux select-pane -t "$current_pane"
+tmux select-pane -t "$target_pane"
