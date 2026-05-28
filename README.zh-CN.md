@@ -15,6 +15,7 @@
 - macOS 端在菜单栏显示今日用量，并在弹窗中展示余额、套餐、订阅限制、用量统计和模型数据。
 - Linux CLI 提供 `usage`、`status`、`bar`、`setup`、`config` 命令。
 - Linux `bar` 模式支持总额度/多 Key 进度条、渠道健康、首 token 延迟、主题配色和热键切换。
+- 提供 TPM 风格 tmux 插件方案，插件运行时只依赖 `tmux`、`curl` 和 `jq`，不要求安装 Swift。
 - 首 token 延迟来自公共状态接口 `GET https://status.input.im/api/status`，CLI 不会为了显示延迟而向你的模型 API 发起推理请求。
 
 ## 要求

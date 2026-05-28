@@ -16,6 +16,7 @@ English | [中文](README.zh-CN.md)
 - Shows `subscription.daily_usage_usd` in the menu bar, with an option to hide decimal places
 - Shows remaining balance, plan, mode, subscription limits, usage summary, and model stats in the popover
 - Shows public channel health and first-token latency from `GET https://status.input.im/api/status`
+- Provides a TPM-style tmux plugin path for users who want a shell-native pane without installing Swift
 - Preserves the last successful usage snapshot in memory when refresh fails
 
 ## Requirements
