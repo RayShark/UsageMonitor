@@ -606,12 +606,12 @@ set -gq @usage_monitor_key "u"
 run-shell -b 'tmux bind-key "$(tmux show-option -gqv @usage_monitor_key)" run-shell -b "USAGE_MONITOR_TMUX_CONFIG=\"$(tmux show-option -gqv @usage_monitor_config)\" USAGE_MONITOR_TMUX_INTERVAL=\"$(tmux show-option -gqv @usage_monitor_interval)\" USAGE_MONITOR_TMUX_HEIGHT=\"$(tmux show-option -gqv @usage_monitor_height)\" USAGE_MONITOR_TMUX_MODEL=\"$(tmux show-option -gqv @usage_monitor_model)\" \"#{d:current_file}/scripts/usage-monitor-pane.sh\""' 
 ```
 
-- [ ] **Step 2: Source entrypoint in a live tmux server**
+- [ ] **Step 2: Run entrypoint in a live tmux server**
 
 Run:
 
 ```bash
-tmux source-file tmux/usage-monitor.tmux
+tmux run-shell "$PWD/tmux/usage-monitor.tmux"
 ```
 
 Expected: no output and exit code 0.
@@ -669,7 +669,7 @@ Expected output shape:
 Run:
 
 ```bash
-tmux source-file tmux/usage-monitor.tmux
+tmux run-shell "$PWD/tmux/usage-monitor.tmux"
 ```
 
 Then press the configured tmux prefix and `u`.
@@ -822,12 +822,12 @@ Expected:
 ok render oneline
 ```
 
-- [ ] **Step 3: Source tmux plugin**
+- [ ] **Step 3: Run tmux plugin entrypoint**
 
 Run:
 
 ```bash
-tmux source-file tmux/usage-monitor.tmux
+tmux run-shell "$PWD/tmux/usage-monitor.tmux"
 ```
 
 Expected: no output and exit code 0.
