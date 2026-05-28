@@ -54,6 +54,27 @@ if [[ -z "$target_session" ]]; then
   exit 0
 fi
 
+target_command="$(tmux display-message -pt "$target_pane" '#{pane_current_command}' 2>/dev/null || true)"
+if [[ "$target_command" == "tmux-agent-sidebar" ]]; then
+  target_window="$(tmux display-message -pt "$target_pane" '#{session_name}:#{window_index}' 2>/dev/null || true)"
+  replacement_pane="$(
+    tmux list-panes -t "$target_window" -F '#{pane_id}|#{pane_width}|#{pane_height}|#{pane_current_command}|#{pane_title}' |
+      awk -F '|' '
+        $4 != "tmux-agent-sidebar" && $5 != "usage-monitor" {
+          area = $2 * $3
+          if (area > best_area) {
+            best_area = area
+            best_pane = $1
+          }
+        }
+        END { print best_pane }
+      '
+  )"
+  if [[ -n "$replacement_pane" ]]; then
+    target_pane="$replacement_pane"
+  fi
+fi
+
 existing_pane="$(
   tmux list-panes -s -t "$target_session" -F '#{pane_id} #{pane_title}' |
     awk -v title="$title" '$2 == title { print $1; exit }'
