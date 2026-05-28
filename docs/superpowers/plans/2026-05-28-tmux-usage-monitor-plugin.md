@@ -31,7 +31,8 @@ Runtime non-requirements:
 
 ## File Structure
 
-- Create `tmux/usage-monitor.tmux`: TPM entrypoint sourced by tmux. Defines default options and key bindings.
+- Create `usage-monitor.tmux`: Root TPM shim that forwards to the real entrypoint.
+- Create `tmux/usage-monitor.tmux`: TPM entrypoint executed by TPM or `tmux run-shell`. Defines default options and key bindings.
 - Create `tmux/scripts/usage-monitor-pane.sh`: Creates, reuses, or closes the monitor pane.
 - Create `tmux/scripts/usage-monitor-render.sh`: Validates dependencies, loads config, fetches usage/status JSON, and prints one compact line.
 - Create `tmux/tests/fixtures/usage-main.json`: Stable usage response fixture.
@@ -591,6 +592,7 @@ git commit -m "feat: add tmux usage monitor pane toggle"
 
 **Files:**
 - Create: `tmux/usage-monitor.tmux`
+- Create: `usage-monitor.tmux`
 
 - [ ] **Step 1: Create TPM entrypoint**
 
@@ -611,6 +613,7 @@ run-shell -b 'tmux bind-key "$(tmux show-option -gqv @usage_monitor_key)" run-sh
 Run:
 
 ```bash
+tmux run-shell "$PWD/usage-monitor.tmux"
 tmux run-shell "$PWD/tmux/usage-monitor.tmux"
 ```
 
@@ -801,6 +804,7 @@ git commit -m "docs: add tmux plugin usage guide"
 Run:
 
 ```bash
+bash -n usage-monitor.tmux
 bash -n tmux/scripts/usage-monitor-render.sh
 bash -n tmux/scripts/usage-monitor-pane.sh
 bash -n tmux/tests/render_oneline_test.sh
@@ -827,7 +831,7 @@ ok render oneline
 Run:
 
 ```bash
-tmux run-shell "$PWD/tmux/usage-monitor.tmux"
+tmux run-shell "$PWD/usage-monitor.tmux"
 ```
 
 Expected: no output and exit code 0.
