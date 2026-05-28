@@ -73,6 +73,23 @@ largest_content_pane() {
     '
 }
 
+bottom_content_pane() {
+  local target="$1"
+  tmux list-panes -t "$target" -F '#{pane_id}|#{pane_top}|#{pane_width}|#{pane_height}|#{pane_current_command}|#{pane_title}' |
+    awk -F '|' '
+      $5 != "tmux-agent-sidebar" && $6 != "usage-monitor" {
+        bottom = $2 + $4
+        area = $3 * $4
+        if (bottom > best_bottom || (bottom == best_bottom && area > best_area)) {
+          best_bottom = bottom
+          best_area = area
+          best_pane = $1
+        }
+      }
+      END { print best_pane }
+    '
+}
+
 monitor_panes_for() {
   local target="$1"
   tmux list-panes -t "$target" -F '#{pane_id} #{pane_title}' |
@@ -160,12 +177,21 @@ fi
 
 if [[ "$scope" == "session" ]]; then
   while read -r window; do
-    pane="$(largest_content_pane "$window")"
+    pane="$(bottom_content_pane "$window")"
     if [[ -n "$pane" ]]; then
       create_monitor_pane "$pane" "background"
     fi
   done < <(tmux list-windows -t "$target_session" -F '#{session_name}:#{window_index}')
 else
-  target_pane="$(content_target_for_pane "$target_pane")"
+  target_window="$(tmux display-message -pt "$target_pane" '#{session_name}:#{window_index}' 2>/dev/null || true)"
+  pane=""
+  if [[ -n "$target_window" ]]; then
+    pane="$(bottom_content_pane "$target_window")"
+  fi
+  if [[ -n "$pane" ]]; then
+    target_pane="$pane"
+  else
+    target_pane="$(content_target_for_pane "$target_pane")"
+  fi
   create_monitor_pane "$target_pane"
 fi
