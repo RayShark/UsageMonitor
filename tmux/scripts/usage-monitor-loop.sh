@@ -113,8 +113,21 @@ placeholder_output() {
 }
 
 active_cache_dir() {
+  local target
+  local link_dir
+
   if [[ -L "$active_link" ]]; then
-    readlink -f "$active_link" 2>/dev/null || true
+    target="$(readlink "$active_link" 2>/dev/null || true)"
+    [[ -n "$target" ]] || return
+    case "$target" in
+      /*)
+        printf '%s' "$target"
+        ;;
+      *)
+        link_dir="$(cd "$(dirname "$active_link")" && pwd)"
+        printf '%s/%s' "$link_dir" "$target"
+        ;;
+    esac
   fi
 }
 

@@ -66,6 +66,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install tmux plugin test dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl jq tmux
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Validate shell scripts
+        run: |
+          bash -n scripts/build-linux-cli.sh
+          bash -n usage-monitor.tmux tmux/usage-monitor.tmux
+          bash -n tmux/scripts/usage-monitor-loop.sh tmux/scripts/usage-monitor-pane.sh tmux/scripts/usage-monitor-render.sh
+          bash -n tmux/tests/*.sh
+
+      - name: Run tmux plugin tests
+        run: |
+          for test in tmux/tests/*_test.sh; do
+            bash "$test"
+          done
+
       - name: Run Linux CLI tests
         run: swift test --filter UsageMonitorCoreTests && swift test --filter UsageMonitorCLITests
 

@@ -2,6 +2,19 @@
 
 All notable changes to 用量监控 are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Added a cross-platform Swift core, Linux-friendly `usage-monitor` CLI, and compact terminal dashboard modes for tmux panes.
+- Added a shell-native TPM-style tmux plugin that runs with `tmux`, `bash`, `curl`, and `jq` without requiring Swift at runtime.
+- Added Linux CLI packaging, checksum generation, artifact upload, and release attachment for `usage-monitor-linux-amd64.tar.gz`.
+
+### Changed
+
+- Extended CI and release workflows to validate tmux plugin shell scripts and fixture-based tmux rendering tests.
+- Updated English and Chinese documentation for Linux CLI, tmux plugin setup, CI, and release artifacts.
+
 ## [2.0.0] — 2026-05-09
 
 ### Changed

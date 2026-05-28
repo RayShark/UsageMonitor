@@ -5,6 +5,7 @@
 The plugin uses:
 
 - `tmux` for pane lifecycle and key binding
+- `bash` for the shell runtime
 - `curl` for `GET /v1/usage` and public status requests
 - `jq` for JSON parsing
 
@@ -86,6 +87,8 @@ Inside a focused monitor pane:
 - `c` cycles the color theme
 
 The pane height adjusts to the selected mode. Data refreshes in the background, so mode and theme switches render from the latest cached snapshot instead of waiting for the next network request. Pressing the same tmux binding again closes the relevant monitor pane: `@usage_monitor_key` closes the monitor in the current window, and `@usage_monitor_global_key` closes all monitor panes in the current session.
+
+Supported themes are `classic`, `mono`, `dracula`, `catppuccin`, `tokyonight`, `nord`, and `gruvbox`.
 
 ## Options
 

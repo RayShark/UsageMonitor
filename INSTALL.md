@@ -60,6 +60,17 @@ usage-monitor bar --interval 60
 
 See [docs/linux-cli.md](docs/linux-cli.md) for tmux recipes and config file setup.
 
+## tmux Plugin
+
+For a shell-native tmux pane that does not require Swift at runtime, install the TPM-style plugin and configure `~/.config/tmux-usage-monitor/config.json`:
+
+```tmux
+set -g @plugin 'yanbohon/UsageMonitor'
+set -g @usage_monitor_config "$HOME/.config/tmux-usage-monitor/config.json"
+```
+
+The plugin runtime needs `tmux`, `bash`, `curl`, and `jq`. See [docs/tmux-plugin.md](docs/tmux-plugin.md).
+
 ## Uninstall
 
 ```bash

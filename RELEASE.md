@@ -13,7 +13,7 @@ git checkout -b release/v2.0.0
 git push -u origin release/v2.0.0
 ```
 
-The workflow validates the version, stamps `Resources/Info.plist`, runs `swift test`, builds `UsageMonitor.app`, creates `UsageMonitor.dmg`, publishes a GitHub Release, and opens a merge-back PR.
+The workflow validates the version, stamps `Resources/Info.plist`, runs tmux plugin shell tests and Swift tests, builds `UsageMonitor.app`, creates `UsageMonitor.dmg`, publishes a GitHub Release, and opens a merge-back PR.
 
 Version tags with a prerelease suffix such as `v2.1.0-beta.1` are published as GitHub prereleases automatically. Manual dispatch can still override the prerelease flag when needed.
 
@@ -36,4 +36,5 @@ swift build
 ./scripts/build-app.sh
 ./scripts/create-dmg.sh
 ./scripts/build-linux-cli.sh
+for test in tmux/tests/*_test.sh; do bash "$test"; done
 ```

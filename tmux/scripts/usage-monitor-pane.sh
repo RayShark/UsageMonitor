@@ -104,14 +104,18 @@ monitor_panes_for_session() {
 
 kill_monitor_panes_for() {
   local target="$1"
-  monitor_panes_for "$target" |
-    xargs -r -n1 tmux kill-pane -t
+  monitor_panes_for "$target" | while IFS= read -r pane; do
+    [[ -n "$pane" ]] || continue
+    tmux kill-pane -t "$pane"
+  done
 }
 
 kill_monitor_panes_for_session() {
   local session="$1"
-  monitor_panes_for_session "$session" |
-    xargs -r -n1 tmux kill-pane -t
+  monitor_panes_for_session "$session" | while IFS= read -r pane; do
+    [[ -n "$pane" ]] || continue
+    tmux kill-pane -t "$pane"
+  done
 }
 
 content_target_for_pane() {

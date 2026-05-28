@@ -32,7 +32,7 @@ swift run usage-monitor -- status
 
 ## tmux Bar Pane
 
-For a TPM-style plugin that does not require Swift at runtime, see [tmux Plugin](tmux-plugin.md). The plugin uses `curl` and `jq` directly and is better suited for shared tmux setups.
+For a TPM-style plugin that does not require Swift at runtime, see [tmux Plugin](tmux-plugin.md). The plugin uses `bash`, `curl`, and `jq` directly and is better suited for shared tmux setups.
 
 Lite display, optimized for a tmux pane:
 

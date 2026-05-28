@@ -275,6 +275,8 @@ cell_symbol() {
 
 fetch_usage_from_config() {
   local output_dir="$1"
+  local -a key_payloads
+  local key_payload
 
   if [[ ! -f "$config_path" ]]; then
     printf 'usage-monitor: config not found %s\n' "$config_path"
@@ -283,7 +285,10 @@ fetch_usage_from_config() {
 
   local default_base
   default_base="$(jq -r '.defaultBaseURL // empty' "$config_path")"
-  mapfile -t key_payloads < <(jq -c '.keys[]?' "$config_path")
+  key_payloads=()
+  while IFS= read -r key_payload; do
+    key_payloads+=("$key_payload")
+  done < <(jq -c '.keys[]?' "$config_path")
 
   if [[ "${#key_payloads[@]}" -eq 0 ]]; then
     printf 'usage-monitor: no keys configured\n'
@@ -394,7 +399,10 @@ else
   cp "$status_json" "$tmp_dir/status.json"
 fi
 
-mapfile -t usage_files < <(find "$tmp_dir" -maxdepth 1 -name 'usage-*.json' | sort)
+usage_files=()
+while IFS= read -r usage_file; do
+  usage_files+=("$usage_file")
+done < <(find "$tmp_dir" -type f -name 'usage-*.json' | sort)
 if [[ "${#usage_files[@]}" -eq 0 ]]; then
   printf 'usage-monitor: no usage data\n'
   exit 0

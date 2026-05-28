@@ -13,3 +13,6 @@ DerivedData/
 # IDE
 .vscode/
 .idea/
+
+# Local code intelligence indexes
+.codegraph/

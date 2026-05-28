@@ -2,7 +2,7 @@ name: Linux CLI
 
 on:
   push:
-    branches: ["main", "linux-cli-*", "release/v*"]
+    branches: ["main", "linux-cli-*", "tmux-plugin-*", "release/v*"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -27,8 +27,24 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Validate packaging script
-        run: bash -n scripts/build-linux-cli.sh
+      - name: Install tmux plugin test dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl jq tmux
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Validate shell scripts
+        run: |
+          bash -n scripts/build-linux-cli.sh
+          bash -n usage-monitor.tmux tmux/usage-monitor.tmux
+          bash -n tmux/scripts/usage-monitor-loop.sh tmux/scripts/usage-monitor-pane.sh tmux/scripts/usage-monitor-render.sh
+          bash -n tmux/tests/*.sh
+
+      - name: Run tmux plugin tests
+        run: |
+          for test in tmux/tests/*_test.sh; do
+            bash "$test"
+          done
 
       - name: Run core tests
         run: swift test --filter UsageMonitorCoreTests

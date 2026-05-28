@@ -15,7 +15,7 @@
 - macOS 端在菜单栏显示今日用量，并在弹窗中展示余额、套餐、订阅限制、用量统计和模型数据。
 - Linux CLI 提供 `usage`、`status`、`bar`、`setup`、`config` 命令。
 - Linux `bar` 模式支持总额度/多 Key 进度条、渠道健康、首 token 延迟、主题配色和热键切换。
-- 提供 TPM 风格 tmux 插件方案，插件运行时只依赖 `tmux`、`curl` 和 `jq`，不要求安装 Swift。
+- 提供 TPM 风格 tmux 插件方案，插件运行时只依赖 `tmux`、`bash`、`curl` 和 `jq`，不要求安装 Swift。
 - 首 token 延迟来自公共状态接口 `GET https://status.input.im/api/status`，CLI 不会为了显示延迟而向你的模型 API 发起推理请求。
 
 ## 要求
@@ -24,6 +24,7 @@
 - Swift 5.9+ / Xcode 15+。
 - Linux CLI 构建推荐使用 `swift:5.9-jammy`。
 - 一个可访问的 sub2api 兼容 `GET /v1/usage` 接口。
+- tmux 插件运行时需要 `tmux`、`bash`、`curl` 和 `jq`。
 
 ## macOS 快速开始
 
@@ -100,6 +101,19 @@ usage-monitor bar --theme gruvbox
 
 更多 CLI 说明见 [docs/linux-cli.md](docs/linux-cli.md)。
 
+## tmux 插件
+
+如果只想在 tmux 中放一个常驻监控 pane，并且不希望运行时安装 Swift，可以通过 TPM 安装 shell-native 插件：
+
+```tmux
+set -g @plugin 'yanbohon/UsageMonitor'
+set -g @usage_monitor_config "$HOME/.config/tmux-usage-monitor/config.json"
+set -g @usage_monitor_key "u"
+set -g @usage_monitor_global_key "U"
+```
+
+按 prefix + `u` 切换当前窗口监控 pane，按 prefix + `U` 为当前 session 的每个窗口切换监控 pane。配置格式、主题、依赖和排障说明见 [docs/tmux-plugin.md](docs/tmux-plugin.md)。
+
 ## 配置
 
 默认配置文件位置：
@@ -127,8 +141,8 @@ USAGE_MONITOR_COLOR_MODE=truecolor
 ## CI/CD
 
 - `CI`：在 `macos-14` 上构建并测试 macOS 应用。
-- `Linux CLI`：在 `swift:5.9-jammy` 中运行 core/CLI 测试，构建 Linux amd64 tarball，校验 SHA-256，冒烟测试打包后的二进制，并上传 artifact。
-- `Release`：构建 macOS DMG 和 Linux amd64 CLI 包，发布到 GitHub Release，并附带 `.sha256` 校验文件。
+- `Linux CLI`：在 `swift:5.9-jammy` 中运行 tmux 插件 shell 测试和 core/CLI 测试，构建 Linux amd64 tarball，校验 SHA-256，冒烟测试打包后的二进制，并上传 artifact。
+- `Release`：重复 Linux/tmux 检查，构建 macOS DMG 和 Linux amd64 CLI 包，发布到 GitHub Release，并附带 `.sha256` 校验文件。
 
 ## 发布构建
 

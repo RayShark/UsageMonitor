@@ -24,6 +24,7 @@ English | [中文](README.zh-CN.md)
 - macOS 13 (Ventura) or later
 - Swift 5.9+ / Xcode 15+
 - A reachable sub2api-compatible `GET /v1/usage` endpoint
+- tmux plugin runtime: `tmux`, `bash`, `curl`, and `jq`
 
 ## Quick Start
 
@@ -53,11 +54,24 @@ The `bar` command is designed for a tmux pane. `--mode oneline` keeps total quot
 
 See [docs/linux-cli.md](docs/linux-cli.md).
 
+## tmux Plugin
+
+Install the shell-native plugin with TPM when you want a persistent tmux pane without Swift at runtime:
+
+```tmux
+set -g @plugin 'yanbohon/UsageMonitor'
+set -g @usage_monitor_config "$HOME/.config/tmux-usage-monitor/config.json"
+set -g @usage_monitor_key "u"
+set -g @usage_monitor_global_key "U"
+```
+
+Press prefix + `u` to toggle the current window monitor, or prefix + `U` to toggle monitors for every window in the session. See [docs/tmux-plugin.md](docs/tmux-plugin.md) for config shape, themes, dependencies, and troubleshooting.
+
 ## CI/CD
 
 - `CI` builds and tests the macOS app on `macos-14`.
-- `Linux CLI` runs core and CLI tests in `swift:5.9-jammy`, builds `usage-monitor-linux-amd64.tar.gz`, verifies its checksum, smokes the packaged binary, and uploads the artifact.
-- `Release` builds the macOS DMG and Linux amd64 CLI package, attaches both to the GitHub Release, and publishes SHA-256 checksum files.
+- `Linux CLI` runs tmux plugin shell tests plus core and CLI tests in `swift:5.9-jammy`, builds `usage-monitor-linux-amd64.tar.gz`, verifies its checksum, smokes the packaged binary, and uploads the artifact.
+- `Release` repeats the Linux/tmux checks, builds the macOS DMG and Linux amd64 CLI package, attaches both to the GitHub Release, and publishes SHA-256 checksum files.
 
 ## Configuration
 
