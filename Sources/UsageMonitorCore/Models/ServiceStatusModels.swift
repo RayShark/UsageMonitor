@@ -1,5 +1,10 @@
 import Foundation
 
+package enum ServiceStatusConfiguration {
+    package static let targetModel = "gpt-5.5"
+    package static let monitoredModels = [targetModel, "gpt-5.4", "gpt-5.4-mini"]
+}
+
 package struct ServiceStatusResponse: Codable, Equatable {
     package let allOK: Bool
     package let generatedAt: TimeInterval

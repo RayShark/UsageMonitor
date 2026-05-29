@@ -17,6 +17,11 @@ while IFS= read -r file; do
   fi
 done < <(find "$ROOT_DIR/tmux" -type f \( -name '*.sh' -o -name '*.tmux' \) | sort)
 
+if grep -n '#{session_name}' "$ROOT_DIR/tmux/usage-monitor.tmux"; then
+  printf 'not ok tmux entrypoint should shell-quote session_name with #{q:session_name}\n' >&2
+  status=1
+fi
+
 if [[ "$status" -ne 0 ]]; then
   exit "$status"
 fi

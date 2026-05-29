@@ -33,11 +33,14 @@ struct CLIConfigStore {
     func save(_ config: CLIConfig) throws {
         let normalized = normalize(config)
         let data = try JSONEncoder.sub2api.encode(normalized)
+        let directoryURL = url.deletingLastPathComponent()
         try fileManager.createDirectory(
-            at: url.deletingLastPathComponent(),
+            at: directoryURL,
             withIntermediateDirectories: true
         )
+        try setPermissions(0o700, at: directoryURL)
         try data.write(to: url, options: [.atomic])
+        try setPermissions(0o600, at: url)
     }
 
     private func normalize(_ config: CLIConfig) -> CLIConfig {
@@ -47,6 +50,13 @@ struct CLIConfigStore {
             showColors: config.showColors,
             theme: config.theme,
             keys: config.keys.enumerated().map { index, key in key.normalized(index: index) }
+        )
+    }
+
+    private func setPermissions(_ permissions: Int, at url: URL) throws {
+        try fileManager.setAttributes(
+            [.posixPermissions: permissions],
+            ofItemAtPath: url.path
         )
     }
 }

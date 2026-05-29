@@ -2,7 +2,7 @@ import Foundation
 import UsageMonitorCore
 
 enum StatusCommand {
-    static let monitoredModels = ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini"]
+    static let monitoredModels = ServiceStatusConfiguration.monitoredModels
     private static let timelineCellCount = 12
 
     static func makeServiceRows(response: ServiceStatusResponse) -> [DashboardServiceRow] {

@@ -50,8 +50,8 @@ global_key="$(tmux_option "@usage_monitor_global_key" "U")"
 mode="$(tmux_option "@usage_monitor_mode" "oneline")"
 theme="$(tmux_option "@usage_monitor_theme" "classic")"
 
-command="USAGE_MONITOR_TMUX_SCOPE=pane USAGE_MONITOR_TMUX_TARGET_PANE=#{pane_id} USAGE_MONITOR_TMUX_TARGET_SESSION=#{session_name} USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") USAGE_MONITOR_TMUX_MODE=$(shell_quote "$mode") USAGE_MONITOR_TMUX_THEME=$(shell_quote "$theme") $(shell_quote "$pane_script")"
-global_command="USAGE_MONITOR_TMUX_SCOPE=session USAGE_MONITOR_TMUX_TARGET_PANE=#{pane_id} USAGE_MONITOR_TMUX_TARGET_SESSION=#{session_name} USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") USAGE_MONITOR_TMUX_MODE=$(shell_quote "$mode") USAGE_MONITOR_TMUX_THEME=$(shell_quote "$theme") $(shell_quote "$pane_script")"
+command="USAGE_MONITOR_TMUX_SCOPE=pane USAGE_MONITOR_TMUX_TARGET_PANE=#{pane_id} USAGE_MONITOR_TMUX_TARGET_SESSION=#{q:session_name} USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") USAGE_MONITOR_TMUX_MODE=$(shell_quote "$mode") USAGE_MONITOR_TMUX_THEME=$(shell_quote "$theme") $(shell_quote "$pane_script")"
+global_command="USAGE_MONITOR_TMUX_SCOPE=session USAGE_MONITOR_TMUX_TARGET_PANE=#{pane_id} USAGE_MONITOR_TMUX_TARGET_SESSION=#{q:session_name} USAGE_MONITOR_TMUX_CONFIG=$(shell_quote "$config") USAGE_MONITOR_TMUX_INTERVAL=$(shell_quote "$interval") USAGE_MONITOR_TMUX_HEIGHT=$(shell_quote "$height") USAGE_MONITOR_TMUX_MODEL=$(shell_quote "$model") USAGE_MONITOR_TMUX_MODE=$(shell_quote "$mode") USAGE_MONITOR_TMUX_THEME=$(shell_quote "$theme") $(shell_quote "$pane_script")"
 
 tmux bind-key "$key" run-shell -b "$command"
 tmux bind-key "$global_key" run-shell -b "$global_command"

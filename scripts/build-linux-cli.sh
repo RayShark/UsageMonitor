@@ -6,6 +6,22 @@ BUILD_DIR="$ROOT_DIR/build"
 PACKAGE_DIR="$BUILD_DIR/usage-monitor-linux-amd64"
 ARCHIVE="$BUILD_DIR/usage-monitor-linux-amd64.tar.gz"
 CHECKSUM="$ARCHIVE.sha256"
+HOST_OS="$(uname -s)"
+HOST_ARCH="$(uname -m)"
+
+if [[ "$HOST_OS" != "Linux" ]]; then
+  printf 'usage-monitor: linux-amd64 package must be built on Linux, not %s\n' "$HOST_OS" >&2
+  exit 2
+fi
+
+case "$HOST_ARCH" in
+  x86_64|amd64)
+    ;;
+  *)
+    printf 'usage-monitor: linux-amd64 package must be built on x86_64/amd64, not %s\n' "$HOST_ARCH" >&2
+    exit 2
+    ;;
+esac
 
 cd "$ROOT_DIR"
 

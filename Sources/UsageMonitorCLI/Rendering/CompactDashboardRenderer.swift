@@ -75,7 +75,8 @@ enum CompactDashboardRenderer {
         theme: CLITheme,
         colorEnabled: Bool
     ) -> String {
-        guard let row = snapshot.serviceRows.first(where: { $0.model == "gpt-5.5" }) ?? snapshot.serviceRows.first else {
+        guard let row = snapshot.serviceRows.first(where: { $0.model == ServiceStatusConfiguration.targetModel })
+                ?? snapshot.serviceRows.first else {
             return "渠道健康 \(snapshot.healthSummaryText)"
         }
 

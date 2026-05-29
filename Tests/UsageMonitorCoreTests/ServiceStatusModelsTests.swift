@@ -2,6 +2,11 @@ import XCTest
 @testable import UsageMonitorCore
 
 final class ServiceStatusModelsTests: XCTestCase {
+    func testDefaultStatusConfigurationDefinesSharedModelOrder() {
+        XCTAssertEqual(ServiceStatusConfiguration.targetModel, "gpt-5.5")
+        XCTAssertEqual(ServiceStatusConfiguration.monitoredModels, ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini"])
+    }
+
     func testStatusResponseDecodesObservedShapeAndSelectsGPT55() throws {
         let response = try JSONDecoder.serviceStatus.decode(
             ServiceStatusResponse.self,
